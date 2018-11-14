@@ -1,6 +1,7 @@
 import nmap
 import json
 import csv
+import argparse
 
 def createCSVFile():
     with open('scan.csv', 'w', newline='') as csvfile:
@@ -13,25 +14,33 @@ def addToCSVFile(ip, port, serviceName, productName, productVersion, status):
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerow([ip, port, serviceName, productName, productVersion, status])
 
-hosts = ['127.0.0.1-3']
+def readCSVFile(filename):
+    with open(filename, 'r') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for row in reader:
+            return row
+
+hosts = readCSVFile("input.csv")
+
 createCSVFile()
 for host in hosts:
     nm = nmap.PortScanner()
     result = nm.scan(host, arguments='-p- -sV')
+    print(result["scan"])
     for address in result["scan"]:
         print("address : " + address)
-        #print(result["scan"])
-        ip = result["scan"][address]['addresses']['ipv4'] #Save ip address
-        for port in result["scan"][address]['tcp']:
-            serviceName = result["scan"][address]['tcp'][port]['name'] #Name of the service
-            print("service name on port "+ str(port) + " : " + serviceName)
+        if('tcp' in result["scan"][address]):
+            ip = result["scan"][address]['addresses']['ipv4'] #Save ip address
+            for port in result["scan"][address]['tcp']:
+                serviceName = result["scan"][address]['tcp'][port]['name'] #Name of the service
+                print("service name on port "+ str(port) + " : " + serviceName)
 
-            productName = result["scan"][address]['tcp'][port]['product'] #Product
-            print("product on port "+ str(port) + " : " + productName)
+                productName = result["scan"][address]['tcp'][port]['product'] #Product
+                print("product on port "+ str(port) + " : " + productName)
 
-            productVersion = result["scan"][address]['tcp'][port]['version']
-            print("product version on port "+ str(port) + " : " + productVersion)
+                productVersion = result["scan"][address]['tcp'][port]['version']
+                print("product version on port "+ str(port) + " : " + productVersion)
 
-            status = result["scan"][address]['tcp'][port]['state']
-            print("status on port "+ str(port)+ " : " + status)
-            addToCSVFile(address, str(port), serviceName, productName, productVersion, status)
+                status = result["scan"][address]['tcp'][port]['state']
+                print("status on port "+ str(port)+ " : " + status)
+                addToCSVFile(address, str(port), serviceName, productName, productVersion, status)
