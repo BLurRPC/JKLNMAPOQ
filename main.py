@@ -10,7 +10,7 @@ def createCSVFile():
 
 
 def addToCSVFile(ip, port, serviceName, productName, productVersion, status):
-    with open('scan.csv', 'a+', newline='') as csvfile:
+    with open('scanResults.csv', 'a+', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerow([ip, port, serviceName, productName, productVersion, status])
 
