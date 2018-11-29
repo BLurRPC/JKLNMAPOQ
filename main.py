@@ -23,6 +23,7 @@ def readCSVFile(filename):
 
 inputFileName = "input.csv"
 scanResultFileName = "scanResult.csv"
+sslscanFileName = "sslscanResult.csv"
 hosts = readCSVFile(inputFileName)
 
 createCSVFile(scanResultFileName)
@@ -47,3 +48,6 @@ for host in hosts:
                 status = result["scan"][address]['tcp'][port]['state']
                 print("status on port "+ str(port)+ " : " + status)
                 addToCSVFile(address, str(port), serviceName, productName, productVersion, status, scanResultFileName)
+
+                if(serviceName == "https"):
+                        sslscan.sslscan(address, sslscanFileName)

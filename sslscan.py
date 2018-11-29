@@ -44,6 +44,3 @@ def sslscan(address, outputFileName):
     xlmparse(resultFileName, outputFileName)
     #xlmparse("google.xml", outputFileName)
     os.remove(resultFileName)
-
-sslscanFileName = "sslscanResult.csv"
-sslscan("127.0.0.1", sslscanFileName)
