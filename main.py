@@ -2,15 +2,16 @@ import nmap
 import json
 import csv
 import argparse
+import sslscan
 
-def createCSVFile():
-    with open('scan.csv', 'w', newline='') as csvfile:
+def createCSVFile(fileName):
+    with open(fileName, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(['IP', 'PORT', 'Service', 'Product', 'Version', 'STATUS'])
 
 
-def addToCSVFile(ip, port, serviceName, productName, productVersion, status):
-    with open('scanResults.csv', 'a+', newline='') as csvfile:
+def addToCSVFile(ip, port, serviceName, productName, productVersion, status, fileName):
+    with open(fileName, 'a+', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerow([ip, port, serviceName, productName, productVersion, status])
 
@@ -20,9 +21,11 @@ def readCSVFile(filename):
         for row in reader:
             return row
 
-hosts = readCSVFile("input.csv")
+inputFileName = "input.csv"
+scanResultFileName = "scanResult.csv"
+hosts = readCSVFile(inputFileName)
 
-createCSVFile()
+createCSVFile(scanResultFileName)
 for host in hosts:
     nm = nmap.PortScanner()
     result = nm.scan(host, arguments='-p- -sV')
@@ -43,4 +46,4 @@ for host in hosts:
 
                 status = result["scan"][address]['tcp'][port]['state']
                 print("status on port "+ str(port)+ " : " + status)
-                addToCSVFile(address, str(port), serviceName, productName, productVersion, status)
+                addToCSVFile(address, str(port), serviceName, productName, productVersion, status, scanResultFileName)
