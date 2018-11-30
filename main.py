@@ -1,8 +1,9 @@
-import nmap
 import json
 import csv
 import argparse
 import sslscan
+import os
+from lxml import etree
 
 def createCSVFile(fileName):
     with open(fileName, 'w', newline='') as csvfile:
@@ -21,6 +22,30 @@ def readCSVFile(filename):
         for row in reader:
             return row
 
+def xlmparse(fileName, outputFileName, sslscanFileName):
+    tree = etree.parse(fileName)
+    root = tree.getroot()
+    status = ""
+    address = ""
+    port = ""
+    service = ""
+    product = ""
+    version = ""
+
+    for host in root.iter('host'):
+        for result in host.findall('address'):
+                address = result.get("addr")
+                print(address)
+        for tmpport in host.findall('ports/port'):
+                port = tmpport.get("portid")
+                status = tmpport.find('state').get("state")
+                service = tmpport.find('service').get("name")
+                product = tmpport.find('service').get("product")
+                version = tmpport.find('service').get("version")
+                addToCSVFile(address, port, service, product, version, status, outputFileName)
+                if(service == "https"):
+                        sslscan.sslscan(address, sslscanFileName)
+
 inputFileName = "input.csv"
 scanResultFileName = "scanResult.csv"
 sslscanFileName = "sslscanResult.csv"
@@ -28,26 +53,6 @@ hosts = readCSVFile(inputFileName)
 
 createCSVFile(scanResultFileName)
 for host in hosts:
-    nm = nmap.PortScanner()
-    result = nm.scan(host, arguments='-p- -sV')
-    print(result["scan"])
-    for address in result["scan"]:
-        print("address : " + address)
-        if('tcp' in result["scan"][address]):
-            ip = result["scan"][address]['addresses']['ipv4'] #Save ip address
-            for port in result["scan"][address]['tcp']:
-                serviceName = result["scan"][address]['tcp'][port]['name'] #Name of the service
-                print("service name on port "+ str(port) + " : " + serviceName)
-
-                productName = result["scan"][address]['tcp'][port]['product'] #Product
-                print("product on port "+ str(port) + " : " + productName)
-
-                productVersion = result["scan"][address]['tcp'][port]['version']
-                print("product version on port "+ str(port) + " : " + productVersion)
-
-                status = result["scan"][address]['tcp'][port]['state']
-                print("status on port "+ str(port)+ " : " + status)
-                addToCSVFile(address, str(port), serviceName, productName, productVersion, status, scanResultFileName)
-
-                if(serviceName == "https"):
-                        sslscan.sslscan(address, sslscanFileName)
+    os.system("nmap -p- -sV -oX " + host + "nmap.xml " + host)
+    xlmparse(host+"nmap.xml", scanResultFileName, sslscanFileName)
+    os.remove(host + "nmap.xml")
