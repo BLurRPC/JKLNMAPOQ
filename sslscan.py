@@ -65,5 +65,5 @@ def sslscan(address, outputFileName):
     resultFileName = address + ".xml"
     os.system("sslscan --xml=" + resultFileName + " " + address)
     xlmparseSSLSCAN(resultFileName, outputFileName)
-    #xlmparse("google.xml", outputFileName)
+    #xlmparseSSLSCAN("google.xml", outputFileName)
     os.remove(resultFileName)

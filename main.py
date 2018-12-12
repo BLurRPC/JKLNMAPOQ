@@ -35,7 +35,6 @@ def xlmparse(fileName, outputFileName, sslscanFileName):
     for host in root.iter('host'):
         for result in host.findall('address'):
                 address = result.get("addr")
-                print(address)
         for tmpport in host.findall('ports/port'):
                 port = tmpport.get("portid")
                 status = tmpport.find('state').get("state")
@@ -43,8 +42,8 @@ def xlmparse(fileName, outputFileName, sslscanFileName):
                 product = tmpport.find('service').get("product")
                 version = tmpport.find('service').get("version")
                 addToCSVFile(address, port, service, product, version, status, outputFileName)
-                if(service == "https"):
-                        sslscan.sslscan(address, sslscanFileName)
+                if(service == "https" or service == "ssl"):
+                        sslscan.sslscan(address, sslscanFileName) #sslscan
 
 inputFileName = "input.csv"
 scanResultFileName = "scanResult.csv"
@@ -53,6 +52,6 @@ hosts = readCSVFile(inputFileName)
 
 createCSVFile(scanResultFileName)
 for host in hosts:
-    os.system("nmap -p- -sV -oX " + host + "nmap.xml " + host)
+    os.system("nmap -v -T2 -sV -oX " + host + "nmap.xml " + host)
     xlmparse(host+"nmap.xml", scanResultFileName, sslscanFileName)
     os.remove(host + "nmap.xml")
