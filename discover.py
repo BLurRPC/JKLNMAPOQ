@@ -21,15 +21,15 @@ def xlmparseDiscover(fileName, outputFileName):
 
     for host in root.iter('host'):
         for result in host.findall('address'):
-                address = result.get("addr")
-                addToCSVFileDiscover(address, outputFileName)
+                if(result.get("addrtype") == "ipv4"):
+                        address = result.get("addr")
+                        addToCSVFileDiscover(address, outputFileName)
 
-inputFileName = "toDiscover.csv"
-scanResultFileName = "discovered.csv"
-hosts = readCSVFileDiscover(inputFileName)
-
-for host in hosts:
-    name, mask = host.split("/")
-    os.system("nmap -sP -oX " + name + "discover.xml " + host)
-    xlmparseDiscover(name + "discover.xml", scanResultFileName)
-    os.remove(name + "discover.xml")
+def launch(inputFileName):
+        scanResultFileName = "discovered.csv"
+        hosts = readCSVFileDiscover(inputFileName)
+        for host in hosts:
+                name = host.split("/")[0]
+                os.system("nmap -sP -oX " + name + "discover.xml " + host)
+                xlmparseDiscover(name + "discover.xml", scanResultFileName)
+                os.remove(name + "discover.xml")

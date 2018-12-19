@@ -2,6 +2,12 @@ import os
 from lxml import etree
 import csv
 
+def readCSVFile(filename):
+    with open(filename, 'r') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for row in reader:
+            return row
+
 def addToCSVFileSSLSCANCipher(status, sslversion, bits, cipher, fileName):
     with open(fileName, 'a+', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -65,5 +71,11 @@ def sslscan(address, outputFileName):
     resultFileName = address + ".xml"
     os.system("sslscan --xml=" + resultFileName + " " + address)
     xlmparseSSLSCAN(resultFileName, outputFileName)
-    #xlmparseSSLSCAN("google.xml", outputFileName)
     os.remove(resultFileName)
+
+def launch(inputFileName):
+    sslscanFileName = "sslscanResult.csv"
+    hosts = readCSVFile(inputFileName)
+
+    for host in hosts:
+        sslscan(host, sslscanFileName)
