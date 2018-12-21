@@ -1,5 +1,6 @@
 import csv
 import os
+import screenshot
 from lxml import etree
 
 def createCSVFile(fileName):
@@ -40,7 +41,7 @@ def xlmparse(fileName, outputFileName):
                 version = tmpport.find('service').get("version")
                 addToCSVFile(address, port, service, product, version, status, outputFileName)
                 if(service == "https" or service == "http"):
-                        print("Capture d'écran à faire ici")
+                        screenshot.openAndScreen(service, address) #Fait une capture d'écran de la page
 
 def launch(inputFileName):
     scanResultFileName = "scanResult.csv"
