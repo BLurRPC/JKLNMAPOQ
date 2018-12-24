@@ -3,22 +3,7 @@ import sslscan
 import discover
 import clean
 import sys
-
-def discoverLaunch(inputFileName="input.csv"):
-        discover.launch(inputFileName)
-
-def nmapLaunch(inputFileName="input.csv"):
-        nmap.launch(inputFileName)
-
-def sslscanLaunch(inputFileName="input.csv"):
-        sslscan.launch(inputFileName)
-
-def allLaunch(inputFileName="input.csv"):
-        print("Tout est lancé ...")
-        #A faire
-
-def cleanLaunch():
-        clean.launch()
+import argparse
 
 def fileCheck(fn):
         try:
@@ -28,31 +13,44 @@ def fileCheck(fn):
                 print ("Ce fichier ne semble pas exister...")
                 return False
 
-#Option args
-options = {0 : discoverLaunch, 1 : nmapLaunch, 2 : sslscanLaunch, 3 : allLaunch, 4 : cleanLaunch}
-#Display options
-print("Bienvenue, voici les options possibles :\n0 : Scan de découverte\n1 : Scan complet avec recherche de services\n2 : Sslscan\n3 : Combinaison des options 1 et 2\n4 : Supprime les fichiers *.xml et les résultats\n5 : Quitter")
-#Get args
+#Get Args
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--discover', metavar="filename", help="Scan de decouverte.")
+parser.add_argument('-n', '--nmap', metavar="filename", help="Scan nmap avec recherche de service.")
+parser.add_argument('-s', '--sslscan', metavar="filename", help="Scan ssl.")
+parser.add_argument('-c', '--clean', action="store_true", help="Nettoie le répertoire.")
+parser.add_argument('-a', '--all', metavar="filename", help="Scan nmap suivi d'un scan ssl.")
+parser.add_argument('-T2', '--force', action="store_true", help="Force du scan")
+args = parser.parse_args()
 
-while(True):
-        ready = False
-        while(not ready):
-                try:
-                        option = int(input("Option numéro ? :\n"))
-                        ready = True
-                except ValueError:
-                        print("Cette option n'est pas un entier.")
+if(args.clean):
+        clean.launch()
+        
+if(args.discover!=None):
+        inputFileName = args.discover
+        if(fileCheck(inputFileName)):
+                discover.launch(inputFileName)
 
-        if(option == 5):
-                print("Au revoir.")
-                sys.exit(0)
-        elif(option == 4):
-                #Do clean
-                cleanLaunch()
-        elif(option < 4):
-                #Do things
-                inputFile = input("Fichier d'entrée ? :\n")
-                if(fileCheck(inputFile)):
-                        options[option](inputFile)
-        else:
-                print("Cette option n'existe pas")
+if(args.nmap!=None):
+        inputFileName = args.nmap
+        if(fileCheck(inputFileName)):
+                if(args.force!=None):
+                        nmap.launch(inputFileName, '-T2')
+                else:
+                        nmap.launch(inputFileName)
+
+if(args.sslscan!=None):
+        inputFileName = args.sslscan
+        if(fileCheck(inputFileName)):
+                sslscan.launch(inputFileName)
+
+if(args.all!=None): #nmap then sslscan using nmap's results
+        inputFileName = args.all
+        if(fileCheck(inputFileName)):
+                if(args.force!=None):
+                        nmap.launch(inputFileName, '-T2')
+                else:
+                        nmap.launch(inputFileName)
+        inputFileName = "scanResult.csv"
+        if(fileCheck(inputFileName)):
+                sslscan.launch(inputFileName)

@@ -34,22 +34,23 @@ def xlmparse(fileName, outputFileName):
         for result in host.findall('address'):
                 address = result.get("addr")
         for tmpport in host.findall('ports/port'):
+                screenshoted = False
                 port = tmpport.get("portid")
                 status = tmpport.find('state').get("state")
                 service = tmpport.find('service').get("name")
                 product = tmpport.find('service').get("product")
                 version = tmpport.find('service').get("version")
                 addToCSVFile(address, port, service, product, version, status, outputFileName)
-                if(service == "https" or service == "http"):
+                if((service == "https" or service == "http") and not screenshoted):
+                        screenshoted = True #Evite de faire 2 fois la même capture
                         screenshot.openAndScreen(service, address) #Fait une capture d'écran de la page
 
-def launch(inputFileName):
+def launch(inputFileName, mode='-T3'):
     scanResultFileName = "scanResult.csv"
-    #sslscanFileName = "sslscanResult.csv"
     hosts = readCSVFile(inputFileName)
 
     createCSVFile(scanResultFileName)
     for host in hosts:
-        os.system("nmap -v -T2 -sV -oX " + host + "nmap.xml " + host)
+        os.system("nmap -v " + mode +" -sV -oX " + host + "nmap.xml " + host)
         xlmparse(host+"nmap.xml", scanResultFileName)
         os.remove(host + "nmap.xml")
