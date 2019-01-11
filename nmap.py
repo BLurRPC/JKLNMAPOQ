@@ -45,7 +45,7 @@ def xlmparse(fileName, outputFileName):
                         screenshoted = True #Evite de faire 2 fois la même capture
                         screenshot.openAndScreen(service, address) #Fait une capture d'écran de la page
 
-def launch(inputFileName, mode='-T3'):
+def launch(inputFileName, mode='-T2'):
     scanResultFileName = "scanResult.csv"
     hosts = readCSVFile(inputFileName)
 
