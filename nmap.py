@@ -1,8 +1,6 @@
-import json
 import csv
-import argparse
-import sslscan
 import os
+import screenshot
 from lxml import etree
 
 def createCSVFile(fileName):
@@ -22,7 +20,7 @@ def readCSVFile(filename):
         for row in reader:
             return row
 
-def xlmparse(fileName, outputFileName, sslscanFileName):
+def xlmparse(fileName, outputFileName):
     tree = etree.parse(fileName)
     root = tree.getroot()
     status = ""
@@ -36,22 +34,23 @@ def xlmparse(fileName, outputFileName, sslscanFileName):
         for result in host.findall('address'):
                 address = result.get("addr")
         for tmpport in host.findall('ports/port'):
+                screenshoted = False
                 port = tmpport.get("portid")
                 status = tmpport.find('state').get("state")
                 service = tmpport.find('service').get("name")
                 product = tmpport.find('service').get("product")
                 version = tmpport.find('service').get("version")
                 addToCSVFile(address, port, service, product, version, status, outputFileName)
-                if(service == "https" or service == "ssl"):
-                        sslscan.sslscan(address, sslscanFileName) #sslscan
+                if((service == "https" or service == "http") and not screenshoted):
+                        screenshoted = True #Evite de faire 2 fois la même capture
+                        screenshot.openAndScreen(service, address) #Fait une capture d'écran de la page
 
-inputFileName = "input.csv"
-scanResultFileName = "scanResult.csv"
-sslscanFileName = "sslscanResult.csv"
-hosts = readCSVFile(inputFileName)
+def launch(inputFileName, mode='-T2'):
+    scanResultFileName = "scanResult.csv"
+    hosts = readCSVFile(inputFileName)
 
-createCSVFile(scanResultFileName)
-for host in hosts:
-    os.system("nmap -v -T2 -sV -oX " + host + "nmap.xml " + host)
-    xlmparse(host+"nmap.xml", scanResultFileName, sslscanFileName)
-    os.remove(host + "nmap.xml")
+    createCSVFile(scanResultFileName)
+    for host in hosts:
+        os.system("nmap -v " + mode +" -sV -oX " + host + "nmap.xml " + host)
+        xlmparse(host+"nmap.xml", scanResultFileName)
+        os.remove(host + "nmap.xml")
