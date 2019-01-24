@@ -31,10 +31,10 @@ def xlmparse(fileName, outputFileName):
     version = ""
 
     for host in root.iter('host'):
+        screenshoted = False
         for result in host.findall('address'):
                 address = result.get("addr")
         for tmpport in host.findall('ports/port'):
-                screenshoted = False
                 port = tmpport.get("portid")
                 status = tmpport.find('state').get("state")
                 service = tmpport.find('service').get("name")
