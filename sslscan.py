@@ -6,7 +6,7 @@ def readCSVFile(filename, outputFileName):
     with open(filename, 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:                        
-                if(row[2]=="https" or row[2]=="ldaps" or row[2]=="sftp"):
+                if(row[1]=="443"):
                         sslscan(row[0], row[1], outputFileName)
 
 def addToCSVFileSSLSCANCipher(address, port, status, sslversion, bits, cipher, signature, altnames, issuer, startDate, endDate, fileName):
@@ -28,24 +28,38 @@ def xlmparseSSLSCAN(fileName, outputFileName):
     cipher = ""
     address = root.find('ssltest').get('host')
     port = root.find('ssltest').get('port')
-    signature = root.find('ssltest/certificate/signature-algorithm').text
-    altnames = root.find('ssltest/certificate/altnames').text
-    issuer = root.find('ssltest/certificate/issuer').text
-    startDate = root.find('ssltest/certificate/not-valid-before').text
-    endDate = root.find('ssltest/certificate/not-valid-after').text
-
+    
+    try:
+        signature = root.find('ssltest/certificate/signature-algorithm').text
+        altnames = root.find('ssltest/certificate/altnames').text
+        issuer = root.find('ssltest/certificate/issuer').text
+        startDate = root.find('ssltest/certificate/not-valid-before').text
+        endDate = root.find('ssltest/certificate/not-valid-after').text
+    except:
+        signature = ""
+        altnames = ""
+        issuer = ""
+        startDate = ""
+        endDate = ""
+    
     for result in tree.xpath("/document/ssltest/cipher"):
-        status = result.get("status")
-        sslversion = result.get("sslversion")
-        bits = result.get("bits")
-        cipher = result.get("cipher")
+        try:
+            status = result.get("status")
+            sslversion = result.get("sslversion")
+            bits = result.get("bits")
+            cipher = result.get("cipher")
+        except:
+            status = ""
+            sslversion = ""
+            bits = ""
+            cipher = ""
         addToCSVFileSSLSCANCipher(address, port, status, sslversion, bits, cipher, signature, altnames, issuer, startDate, endDate, outputFileName)
 
 def sslscan(address, port, outputFileName):
     resultFileName = address + ".xml"
     os.system("sslscan --no-failed --xml=" + resultFileName + " " + address + ":" + port)
     xlmparseSSLSCAN(resultFileName, outputFileName)
-    os.remove(resultFileName)
+    #os.remove(resultFileName)
 
 def launch(inputFileName):
     sslscanFileName = "sslscanResult.csv"
