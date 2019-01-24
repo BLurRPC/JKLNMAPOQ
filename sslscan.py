@@ -59,7 +59,7 @@ def sslscan(address, port, outputFileName):
     resultFileName = address + ".xml"
     os.system("sslscan --no-failed --xml=" + resultFileName + " " + address + ":" + port)
     xlmparseSSLSCAN(resultFileName, outputFileName)
-    #os.remove(resultFileName)
+    os.remove(resultFileName)
 
 def launch(inputFileName):
     sslscanFileName = "sslscanResult.csv"
